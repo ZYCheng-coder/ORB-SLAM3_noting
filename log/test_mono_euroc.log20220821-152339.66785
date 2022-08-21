@@ -1,0 +1,4 @@
+Log file created at: 2022/08/21 15:23:39
+Running on machine: czy
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0821 15:23:39.323082 66785 System.cc:44] Input sensor was set to: 

@@ -20,37 +20,50 @@
 #include<algorithm>
 #include<fstream>
 #include<chrono>
-
+#include <glog/logging.h>
 #include<opencv2/core/core.hpp>
 
 #include<System.h>
 
 using namespace std;
 
+DEFINE_string(ORBvoc, "../Vocabulary/ORBvoc.txt" ,"ORBvoc.txt");
+DEFINE_string(EuRoc_yaml, "../Monocular/EuRoC.yaml" ,"EuRoC.yaml");
+DEFINE_string(datasets, "/home/czy/datasets/" ,"datasets path");
+DEFINE_string(timestamp, "./Monocular/EuRoC_TimeStamps/V101.txt" ,"timastamp path");
+DEFINE_string(data_name, "dataset-V101_mono" ,"data name");
+
 void LoadImages(const string &strImagePath, const string &strPathTimes,
                 vector<string> &vstrImages, vector<double> &vTimeStamps);
 
 int main(int argc, char **argv) {
+    google::InitGoogleLogging(argv[0]);
+    google::SetLogDestination(google::INFO, "../log/test_mono_euroc.log");
+    FLAGS_stderrthreshold = google::INFO;
+    FLAGS_colorlogtostderr = true;
+    google::ParseCommandLineFlags(&argc, &argv, true);
     if (argc < 5) {
-        clog << endl << "for example: " << endl
+        LOG(ERROR) << endl << "for example: " << endl
              << "./Monocular/mono_euroc ../Vocabulary/ORBvoc.txt ./Monocular/EuRoC.yaml /home/czy/datasets/  ./Monocular/EuRoC_TimeStamps/V101.txt dataset-V101_mono"
-             << std::endl;
+             << std::endl << std::endl;
 
-        clog << "param: " << std::endl
+        LOG(ERROR) << "param: " << std::endl
              << "1: 可执行文件;" << std::endl
              << "2: ORBvoc.txt; " << std::endl
              << "3: EuRoC.yaml (针对数据的配置文件，如相机内参、畸变参数等);" << std::endl
              << "4: &{path_of_datasets} (数据集位置);" << std::endl
              << "5: 时间辍文件;" << std::endl
-             << "6: 执行的数据名称." << std::endl;
+             << "6: 执行的数据名称." << std::endl
+             << std::endl;
 
-        cerr << endl
+        LOG(ERROR) << endl
              << "Usage: ./mono_euroc path_to_vocabulary path_to_settings path_to_sequence_folder_1 path_to_times_file_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) (trajectory_file_name)"
              << endl;
-        return 1;
+
+        LOG(WARNING) << "加载默认的配置和数据" << std::endl;
     }
 
-    const int num_seq = (argc - 3) / 2;
+    const int num_seq = (argc - 3) / 2;  // 多数据使用
     cout << "num_seq = " << num_seq << endl;
     bool bFileName = (((argc - 3) % 2) == 1);
     string file_name;
@@ -65,9 +78,9 @@ int main(int argc, char **argv) {
     vector<vector<double> > vTimestampsCam;
     vector<int> nImages;
 
-    vstrImageFilenames.resize(num_seq);
-    vTimestampsCam.resize(num_seq);
-    nImages.resize(num_seq);
+    vstrImageFilenames.resize(num_seq);  // 保存图片路径
+    vTimestampsCam.resize(num_seq);  // 保存时间辍
+    nImages.resize(num_seq);  // 保存数据量大小
 
     int tot_images = 0;
     for (seq = 0; seq < num_seq; seq++) {
@@ -91,6 +104,8 @@ int main(int argc, char **argv) {
     int fps = 20;
     float dT = 1.f / fps;
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
+    //创建SLAM系统：
+    // 参数1：ORBVoc路径  参数2：配置文件 参数3：相机类型参数 参数4：是否进行可视化
     ORB_SLAM3::System SLAM(argv[1], argv[2], ORB_SLAM3::System::MONOCULAR, true);
     float imageScale = SLAM.GetImageScale();
 

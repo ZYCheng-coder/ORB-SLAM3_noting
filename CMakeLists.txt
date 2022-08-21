@@ -42,6 +42,15 @@ find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 find_package(realsense2)
 
+file(GLOB GLOG_LIBRARIES /usr/lib/x86_64-linux-gnu/libglog.so)
+set(GLOG_INCLUDE_DIRS /usr/include)
+message("glog_include_dirs=${GLOG_INCLUDE_DIRS}")
+message("glog_libraries=${GLOG_LIBRARIES}")
+
+include_directories(
+        ${GLOB_INCLUDE_DIRS}
+)
+
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
@@ -123,6 +132,8 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 -lboost_serialization
 -lcrypto
+glog
+gflags
 )
 
 # If RealSense SDK is found the library is added and its examples compiled
@@ -199,7 +210,7 @@ target_link_libraries(mono_kitti ${PROJECT_NAME})
 
 add_executable(mono_euroc
         Examples/Monocular/mono_euroc.cc)
-target_link_libraries(mono_euroc ${PROJECT_NAME})
+target_link_libraries(mono_euroc ${PROJECT_NAME} glog gflags)
 
 add_executable(mono_tum_vi
         Examples/Monocular/mono_tum_vi.cc)

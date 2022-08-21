@@ -79,7 +79,7 @@ Required to calculate the alignment of the trajectory with the ground truth. **R
 
 We provide some examples to process input of a monocular, monocular-inertial, stereo, stereo-inertial or RGB-D camera using ROS. Building these examples is optional. These have been tested with ROS Melodic under Ubuntu 18.04.
 
-# 3. Building ORB-SLAM3 library and examples
+# 3. 编译ORB-SLAM3 并且运行范例
 
 Clone the repository:
 ```
@@ -92,6 +92,113 @@ cd ORB_SLAM3
 chmod +x build.sh
 ./build.sh
 ```
+&emsp;
+#### 编译报错问题解决方法：
+##### 1: opencv问题 ，此处使用opencv4.5 
+step1: 安装依赖项
+```shell
+$ sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev build-essential mlocate
+$ sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
+$ sudo apt update
+$ sudo apt install libjasper1 libjasper-dev
+```
+step2: 下载opencv
+```shell
+$ cd ~
+$ wget -O opencv.zip https://github.com/opencv/opencv/archive/4.5.0.zip
+$ wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.5.0.zip
+$ unzip opencv.zip
+$ unzip opencv_contrib.zip
+$ mv opencv-4.5.0 opencv
+$ mv opencv_contrib-4.5.0 opencv_contrib
+$ mv opencv_contrib opencv
+```
+step3: 编译
+```shell
+$ cd ~/opencv && mkdir build && cd build
+$ cmake ..
+$ sudo make
+$ sudo make install
+```
+step4: 将opencv库添加到系统路径
+```shell
+$ sudo vim /etc/ld.so.conf.d/opencv.conf 
+## 此前没有装过的opencv的话，其会新建一个文件，添加以下内容后保存退出
+/usr/local/lib
+```
+step5: 保存后执行以下命令使配置路径生效
+```shell
+$ sudo ldconfig 
+```
+step6: 配置bash
+```shell
+$ sudo vim /etc/bash.bashrc 
+## 添加以下内容在文本末尾后保存退出
+PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig  
+export PKG_CONFIG_PATH  
+```
+step7: 保存，执行如下命令使得配置生效
+```shell
+$ source /etc/bash.bashrc
+```
+step8: 更新配置
+```shell
+$ sudo updatedb
+```
+step9: 测试是否安装成功
+```shell
+$ opencv_version
+4.5.0
+```
+&emsp;
+
+##### 2:Pangolin问题
+step1: 安装依赖
+```shell
+sudo apt install libgl1-mesa-dev
+sudo apt install libglew-dev
+sudo apt install libpython2.7-dev
+sudo apt install pkg-config
+sudo apt install libegl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols
+```
+step2: 下载pangolin，最好使用v0.6版本
+https://github.com/stevenlovegrove/Pangolin/tree/v0.6
+
+step3: 
+```shell
+cd Pangolin
+mkdir build && cd build
+cmake ..
+make -j16
+sudo make install
+```
+step4: 检测安装效果
+```shell
+cd examples/HelloPangolin
+mkdir build && cd build
+cmake ..
+make 
+./HelloPangolin
+```
+
+##### 改动：
+1: 使用LOG进行调试信息和数据信息输出\
+    需要安装LOG
+```shell
+git clone https://github.com/google/glog
+cd glog
+mkdir build && cd build
+cmake -DGFLAGS_NAMESPACE=google -DCMAKE_CXX_FLAGS=-fPIC -DBUILD_SHARED_LIBS=ON ..
+make
+sudo make install
+```
+&emsp;
+
+glog 使用方法如下链接：
+https://blog.csdn.net/kenstandlee/article/details/117031392
+&emsp;
+
+&emsp;
 
 This will create **libORB_SLAM3.so**  at *lib* folder and the executables in *Examples* folder.
 
